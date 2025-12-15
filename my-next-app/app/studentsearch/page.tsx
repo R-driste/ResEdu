@@ -6,17 +6,20 @@ import { useState, useEffect } from 'react';
 interface StudentProfile {
   id: number;
   created_at: string;
+  assigned_id: number | null;
   name: string | null;
-  'files guide': string | null;
   grade: number | null;
   school: string | null;
-  zip: number | null;
+  unweighted_acad_gpa: number | null;
+  weighted_acad_gpa: number | null;
 }
 
 export default function SearchPage() {
   const [entries, setEntries] = useState<StudentProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nameFilter, setNameFilter] = useState('');
+  const [gpaFilter, setGpaFilter] = useState('');
 
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -32,7 +35,7 @@ export default function SearchPage() {
       }
 
       const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/STUDENTPROFILES?select=*`,
+        `${SUPABASE_URL}/rest/v1/studentprofiles?select=*`,
         {
           headers: {
             'apikey': SUPABASE_ANON_KEY,
@@ -54,6 +57,12 @@ export default function SearchPage() {
     }
   }
 
+  const filteredEntries = entries.filter(e => {
+    const nameMatch = !nameFilter || e.name?.toLowerCase().includes(nameFilter.toLowerCase());
+    const gpaMatch = !gpaFilter || (e.weighted_acad_gpa && e.weighted_acad_gpa >= parseFloat(gpaFilter));
+    return nameMatch && gpaMatch;
+  });
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="w-full max-w-7xl py-12 px-6 bg-white dark:bg-black">
@@ -67,6 +76,23 @@ export default function SearchPage() {
               ← Back to home
             </Link>
           </div>
+        </div>
+
+        <div className="mt-6 flex gap-4">
+          <input
+            type="text"
+            placeholder="Filter by name"
+            value={nameFilter}
+            onChange={(e) => setNameFilter(e.target.value)}
+            className="px-4 py-2 border rounded"
+          />
+          <input
+            type="number"
+            placeholder="Min GPA"
+            value={gpaFilter}
+            onChange={(e) => setGpaFilter(e.target.value)}
+            className="px-4 py-2 border rounded"
+          />
         </div>
 
         {loading && (
@@ -83,8 +109,11 @@ export default function SearchPage() {
 
         {!loading && !error && (
           <>
+            <div className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
+              Showing {filteredEntries.length} of {entries.length} students
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {entries.map((student) => (
+              {filteredEntries.map((student) => (
                 <Link
                   key={student.id}
                   href={`/student/${student.id}`}
@@ -101,13 +130,13 @@ export default function SearchPage() {
                       {student.grade && (
                         <p>Grade: {student.grade}</p>
                       )}
-                      {student.zip && (
-                        <p>ZIP: {student.zip}</p>
+                      {student.weighted_acad_gpa && (
+                        <p>GPA: {student.weighted_acad_gpa.toFixed(2)}</p>
                       )}
                     </div>
                   </div>
                   <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-4">
-                    ID: {student.id}
+                    Assigned ID: {student.assigned_id}
                   </div>
                 </Link>
               ))}

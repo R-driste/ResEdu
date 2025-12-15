@@ -5,10 +5,8 @@ interface StudentProfile {
   id: number;
   created_at: string;
   name: string | null;
-  'files guide': string | null;
   grade: number | null;
   school: string | null;
-  zip: number | null;
 }
 
 async function getStudent(id: string): Promise<StudentProfile | null> {
@@ -20,7 +18,7 @@ async function getStudent(id: string): Promise<StudentProfile | null> {
   }
 
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/STUDENTPROFILES?id=eq.${id}&select=*`,
+    `${SUPABASE_URL}/rest/v1/studentprofiles?id=eq.${id}&select=*`,
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
@@ -41,8 +39,9 @@ async function getStudent(id: string): Promise<StudentProfile | null> {
   return data[0] || null;
 }
 
-export default async function StudentPage({ params }: { params: { id: string } }) {
-  const student = await getStudent(params.id);
+export default async function StudentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const student = await getStudent(id);
 
   if (!student) {
     notFound();
@@ -71,15 +70,7 @@ export default async function StudentPage({ params }: { params: { id: string } }
                   <p><strong>Name:</strong> {student.name || 'N/A'}</p>
                   <p><strong>Grade:</strong> {student.grade || 'N/A'}</p>
                   <p><strong>School:</strong> {student.school || 'N/A'}</p>
-                  <p><strong>ZIP Code:</strong> {student.zip || 'N/A'}</p>
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Files Guide</h3>
-                <p className="mt-2 text-zinc-700 dark:text-zinc-300">
-                  {student['files guide'] || 'No files guide available'}
-                </p>
               </div>
             </div>
 

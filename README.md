@@ -22,6 +22,7 @@ Setup Instructions:
 2. Install dependencies:
    ```
    npm install
+   pip install pyPDF2
    ```
 
 ### Supabase Setup [IGNORE, ONLY FOLLOW IF YOU ARE CREATING YOUR OWN DUPLICATE]
@@ -52,3 +53,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_public_key
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000).
+
+The app includes a PDF parser page at `/parse` where you can upload a transcript PDF and convert it to CSV using the included Python script.
+

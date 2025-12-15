@@ -32,7 +32,7 @@ export default function SearchPage() {
       }
 
       const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/STUDENTPROFILES?select=*`,
+        `${SUPABASE_URL}/rest/v1/studentprofiles?select=*`,
         {
           headers: {
             'apikey': SUPABASE_ANON_KEY,

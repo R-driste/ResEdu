@@ -30,26 +30,42 @@ def parse_transcript(text):
     patterns = {
         'student_id': r'Student ID\s+(\d+)',
         'state_id': r'State Student ID\s+(\d+)',
-        'grade': r'Grade\s+(\d+)',
         'age': r'Age\s+(\d+)',
         'birthdate': r'Birthdate\s+([\d/]+)',
         'counselor': r'Counselor\s+(.+)',
-        'language': r'RptgLng\s+(\w+)',
+        'school': r'\| (.+ High School)',
+        'language': r'RptgLng\s+(.+)',
     }
     
     for key, pattern in patterns.items():
         match = re.search(pattern, text)
         student_data[key] = match.group(1).strip() if match else ''
     
-    # Extract name (appears in header)
-    name_match = re.search(r'Full Contact List For (.+)', text)
+    # Remove commas from counselor to avoid CSV issues
+    if student_data['counselor']:
+        student_data['counselor'] = student_data['counselor'].replace(',', '')
+    
+    # Extract grade (take the first match to get current grade)
+    grade_matches = re.findall(r'Grade\s+(\d+)', text)
+    student_data['grade'] = grade_matches[0] if grade_matches else ''
+    
+    # Extract name (try different patterns)
+    name_match = re.search(r'Name:\s+(.+)', text)
+    if not name_match:
+        name_match = re.search(r'Student Name\s+(.+)', text)
+    if not name_match:
+        name_match = re.search(r'Full Contact List For ([A-Z][a-z]+, [A-Z][a-z]+)', text)
     if name_match:
-        # Format is "Roy, Dristi" - reverse it
-        name_parts = name_match.group(1).strip().split(', ')
-        if len(name_parts) == 2:
-            student_data['name'] = f"{name_parts[1]} {name_parts[0]}"
+        name_text = name_match.group(1).strip()
+        # Check if it's "Last, First" format
+        if ', ' in name_text:
+            name_parts = name_text.split(', ')
+            if len(name_parts) == 2:
+                student_data['name'] = f"{name_parts[1]} {name_parts[0]}"
+            else:
+                student_data['name'] = name_text
         else:
-            student_data['name'] = name_match.group(1).strip()
+            student_data['name'] = name_text
     
     # Extract GPAs - improved pattern
     gpa_lines = re.findall(r'(\d+\.\d+)\s+(\d+\.\d+)', text)
@@ -69,18 +85,17 @@ def parse_transcript(text):
         student_data['credits_attempted'] = credit_matches[-1][0]
         student_data['credits_completed'] = credit_matches[-1][1]
     
+    print("Extracted student_data:", student_data)
     return student_data
 
+#unfinished
 def parse_courses(text):
     """Parse course history from transcript."""
     courses = []
     
-    # Find all course entries - improved pattern for the messy format
-    # Look for lines with: school_year term grade course_id course_title grade_mark credits
     lines = text.split('\n')
     
     for i, line in enumerate(lines):
-        # Look for year pattern at start
         year_match = re.match(r'^(\d+)\s+(\d{4}-\d{4})\s+(\d)\s+(\d+)\s+(\d+)', line)
         if year_match:
             school_code = year_match.group(1)
@@ -89,24 +104,15 @@ def parse_courses(text):
             grade = year_match.group(4)
             course_id = year_match.group(5)
             
-            # Extract rest of line
             rest = line[year_match.end():].strip()
             
-            # Try to extract course title, mark, and credits
-            # Pattern: course_title P (optional H/AP) mark credits credits
             parts = rest.split()
             
             if len(parts) >= 3:
-                # Last two should be credits
                 credits_completed = parts[-1]
                 credits_attempted = parts[-2]
-                
-                # Mark is before credits (could be A, A+, A-, etc.)
                 mark = parts[-3] if len(parts) >= 3 else ''
-                
-                # Everything before mark is the course title
                 title_parts = parts[:-3]
-                # Remove 'P' and 'H/AP' indicators
                 title_parts = [p for p in title_parts if p not in ['P', 'H/AP', 'N']]
                 course_title = ' '.join(title_parts)
                 
@@ -145,7 +151,6 @@ def save_student_data_csv(student_data_list, output_file='student_data.csv'):
         print("No student data to save")
         return
     
-    # Get all possible keys
     all_keys = set()
     for data in student_data_list:
         all_keys.update(data.keys())
@@ -177,8 +182,12 @@ def save_courses_csv(courses_list, output_file='courses.csv'):
 
 def main():
     """Main function to process transcript files."""
-    # Process single file or directory
-    input_path = input("Enter transcript file or directory path: ").strip()
+    import sys
+    if len(sys.argv) < 2:
+        print("Usage: python parse_transcript.py <transcript_file>")
+        return
+    
+    input_path = sys.argv[1].strip()
     
     path = Path(input_path)
     
@@ -214,7 +223,6 @@ def main():
             import traceback
             traceback.print_exc()
     
-    # Save to CSV files
     if all_student_data:
         save_student_data_csv(all_student_data)
     
