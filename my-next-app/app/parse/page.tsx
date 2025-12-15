@@ -91,7 +91,7 @@ export default function ParsePage() {
 
         <div className="mt-6">
           <Link href="/" className="text-sm font-medium text-blue-600 hover:underline">
-            ← Back to home
+            Back to home
           </Link>
         </div>
       </main>

@@ -52,7 +52,7 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
       <main className="w-full max-w-4xl py-32 px-6 bg-white dark:bg-black">
         <div className="mb-8">
           <Link href="/studentsearch" className="text-sm font-medium text-blue-600 hover:underline">
-            ← Back to student search
+            Back to student search
           </Link>
         </div>
 
