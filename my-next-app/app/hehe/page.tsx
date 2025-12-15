@@ -85,9 +85,8 @@ export default function SearchPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {entries.map((student) => (
-                <Link
+                <div
                   key={student.id}
-                  href={`/student/${student.id}`}
                   className="aspect-square bg-white dark:bg-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between cursor-pointer hover:scale-105 transform border border-zinc-200 dark:border-zinc-800"
                 >
                   <div>
@@ -109,7 +108,7 @@ export default function SearchPage() {
                   <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-4">
                     ID: {student.id}
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
 
