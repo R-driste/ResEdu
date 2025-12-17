@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+//all student attributes needed
 interface StudentProfile {
   id: number;
   created_at: string;
   name: string | null;
   grade: number | null;
   school: string | null;
+  advanced_courses: string | null;
+  add_comm: string | null;
 }
 
+//grab student data from supabase
 async function getStudent(id: string): Promise<StudentProfile | null> {
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -48,15 +52,15 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="w-full max-w-4xl py-32 px-6 bg-white dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-slate-900">
+      <main className="w-full max-w-4xl py-32 px-6 bg-blue-500 dark:bg-slate-900">
         <div className="mb-8">
           <Link href="/studentsearch" className="text-sm font-medium text-blue-600 hover:underline">
             Back to student search
           </Link>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8 border border-zinc-200 dark:border-zinc-800">
+        <div className="bg-blue-500 dark:bg-zinc-900 rounded-lg shadow-lg p-8 border border-zinc-200 dark:border-zinc-800">
           <h1 className="text-4xl font-bold mb-6 text-black dark:text-zinc-50">
             {student.name || 'Unnamed Student'}
           </h1>
@@ -81,8 +85,38 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
                   Created: {new Date(student.created_at).toLocaleDateString()}
                 </p>
               </div>
+     
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Advanced Courses
+              </h3>
+              {student.advanced_courses ? (
+                <ul className="mt-2 text-zinc-700 dark:text-zinc-300 list-disc list-inside">
+                  {JSON.parse(student.advanced_courses).map(
+                    (course: { type: string; course_title: string; year: string }, index: number) => (
+                      <li key={index}>
+                        {course.type}: {course.course_title} ({course.year})
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p className="mt-2 text-zinc-700 dark:text-zinc-300">
+                  No advanced courses listed.
+                </p>
+              )}
+            </div>
 
-              {/* Add more fields if available */}
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Additional Comments
+              </h3>
+              <p className="mt-2 text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                {student.add_comm || 'No additional comments provided.'}
+              </p>
+            </div>
+
             </div>
           </div>
         </div>

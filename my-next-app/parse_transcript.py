@@ -85,10 +85,47 @@ def parse_transcript(text):
         student_data['credits_attempted'] = credit_matches[-1][0]
         student_data['credits_completed'] = credit_matches[-1][1]
     
+    # Extract advanced courses (AP, IB, or H)
+    advanced_courses = []
+    lines = text.split('\n')
+    
+    for line in lines:
+        # Look for course lines with H/AP, AP, IB, or H indicators
+        if re.search(r'\b(H/AP|AP|IB|H)\b', line):
+            # Try to extract course information
+            year_match = re.match(r'^(\d+)\s+(\d{4}-\d{4})\s+(\d)\s+(\d+)\s+(\d+)', line)
+            if year_match:
+                rest = line[year_match.end():].strip()
+                parts = rest.split()
+                
+                if len(parts) >= 3:
+                    # Extract course title (excluding markers and grades)
+                    title_parts = parts[:-3]
+                    title_parts = [p for p in title_parts if p not in ['P', 'H/AP', 'N', 'AP', 'IB', 'H']]
+                    course_title = ' '.join(title_parts)
+                    
+                    # Determine course type
+                    course_type = ''
+                    if 'H/AP' in rest or 'AP' in rest:
+                        course_type = 'AP'
+                    elif 'IB' in rest:
+                        course_type = 'IB'
+                    elif 'H' in rest:
+                        course_type = 'H'
+                    
+                    advanced_courses.append({
+                        'course_title': course_title,
+                        'type': course_type,
+                        'year': year_match.group(2)
+                    })
+    
+    # Add advanced courses list to student data
+    student_data['advanced_courses'] = advanced_courses
+    student_data['num_advanced_courses'] = len(advanced_courses)
+    
     print("Extracted student_data:", student_data)
     return student_data
 
-#unfinished
 def parse_courses(text):
     """Parse course history from transcript."""
     courses = []
@@ -151,8 +188,19 @@ def save_student_data_csv(student_data_list, output_file='student_data.csv'):
         print("No student data to save")
         return
     
-    all_keys = set()
+    # Create a flattened version for CSV (convert advanced_courses list to string)
+    flattened_data = []
     for data in student_data_list:
+        flat_data = data.copy()
+        if 'advanced_courses' in flat_data:
+            # Convert list to semicolon-separated string
+            courses_str = '; '.join([f"{c['type']}: {c['course_title']} ({c['year']})" 
+                                    for c in flat_data['advanced_courses']])
+            flat_data['advanced_courses'] = courses_str
+        flattened_data.append(flat_data)
+    
+    all_keys = set()
+    for data in flattened_data:
         all_keys.update(data.keys())
     
     fieldnames = sorted(all_keys)
@@ -160,7 +208,7 @@ def save_student_data_csv(student_data_list, output_file='student_data.csv'):
     with open(output_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(student_data_list)
+        writer.writerows(flattened_data)
     
     print(f"Student data saved to {output_file}")
 
@@ -217,6 +265,7 @@ def main():
             
             print(f"  ✓ Extracted data for {student_data.get('name', 'Unknown')}")
             print(f"  ✓ Found {len(courses)} courses")
+            print(f"  ✓ Found {student_data.get('num_advanced_courses', 0)} advanced courses")
             
         except Exception as e:
             print(f"  ✗ Error processing {filepath.name}: {e}")

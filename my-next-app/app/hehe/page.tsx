@@ -55,11 +55,11 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="w-full max-w-7xl py-12 px-6 bg-white dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-blue-50 font-sans dark:bg-slate-900">
+      <main className="w-full max-w-7xl py-12 px-6 bg-blue-500 dark:bg-slate-900">
         <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-black dark:text-zinc-50">Search Student Resumes</h1>
-          <p className="mt-4 text-base text-zinc-700 dark:text-zinc-400">
+          <h1 className="text-4xl font-semibold text-black dark:text-blue-50">Search Student Resumes</h1>
+          <p className="mt-4 text-base text-blue-700 dark:text-blue-400">
             Browse student profiles and resumes.
           </p>
           <div className="mt-6">
@@ -71,7 +71,7 @@ export default function SearchPage() {
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <div className="text-xl text-zinc-600 dark:text-zinc-400">Loading student profiles...</div>
+            <div className="text-xl text-blue-600 dark:text-blue-400">Loading student profiles...</div>
           </div>
         )}
 
@@ -87,13 +87,13 @@ export default function SearchPage() {
               {entries.map((student) => (
                 <div
                   key={student.id}
-                  className="aspect-square bg-white dark:bg-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between cursor-pointer hover:scale-105 transform border border-zinc-200 dark:border-zinc-800"
+                  className="aspect-square bg-blue-500 dark:bg-blue-900 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between cursor-pointer hover:scale-105 transform border border-blue-200 dark:border-blue-800"
                 >
                   <div>
-                    <h3 className="text-xl font-bold mb-2 text-black dark:text-zinc-50 line-clamp-2">
+                    <h3 className="text-xl font-bold mb-2 text-black dark:text-blue-50 line-clamp-2">
                       {student.name || 'Unnamed Student'}
                     </h3>
-                    <div className="text-zinc-600 dark:text-zinc-400 text-sm space-y-1">
+                    <div className="text-blue-600 dark:text-blue-400 text-sm space-y-1">
                       {student.school && (
                         <p className="line-clamp-2">{student.school}</p>
                       )}
@@ -105,7 +105,7 @@ export default function SearchPage() {
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-4">
+                  <div className="text-xs text-blue-400 dark:text-blue-500 mt-4">
                     ID: {student.id}
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default function SearchPage() {
             </div>
 
             {entries.length === 0 && (
-              <div className="text-center text-zinc-500 dark:text-zinc-400 py-20">
+              <div className="text-center text-blue-500 dark:text-blue-400 py-20">
                 No student profiles found
               </div>
             )}
